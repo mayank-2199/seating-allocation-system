@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniAlign AI: AI Driven University Seating & Room Allocation System</title>
+    <meta name="description"
+        content="AI-driven university seating allocation system with smart sorting, room visualization, and constraint-based optimization.">
+    <!-- Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <!-- jsPDF for PDF Export -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <!-- QR Code Generator -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-particles" id="login-particles"></div>
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="login-logo-icon">
+                    <i data-lucide="cpu"></i>
+                </div>
+                <h1>UniAlign AI</h1>
+                <p class="login-tagline">AI Driven University Seating & Room Allocation System</p>
+            </div>
+            <form id="login-form" class="login-form" autocomplete="off">
+                <div class="login-field">
+                    <label for="login-email">Admin Email</label>
+                    <div class="login-input-wrap">
+                        <i data-lucide="mail" class="login-input-icon"></i>
+                        <input type="email" id="login-email" class="login-input" placeholder="admin@university.edu"
+                            required>
+                    </div>
+                </div>
+                <div class="login-field">
+                    <label for="login-password">Password</label>
+                    <div class="login-input-wrap">
+                        <i data-lucide="lock" class="login-input-icon"></i>
+                        <input type="password" id="login-password" class="login-input" placeholder="Enter your password"
+                            required>
+                        <button type="button" id="toggle-password" class="toggle-password-btn"
+                            aria-label="Toggle password visibility">
+                            <i data-lucide="eye" id="eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="login-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember-me">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                </div>
+                <button type="submit" id="login-btn" class="login-submit-btn">
+                    <span class="login-btn-text">Sign In</span>
+                    <i data-lucide="arrow-right" class="login-btn-arrow"></i>
+                </button>
+                <div id="login-error" class="login-error hidden">
+                    <i data-lucide="alert-circle"></i>
+                    <span id="login-error-msg">Invalid credentials</span>
+                </div>
+            </form>
+            <div class="login-footer-note">
+                <i data-lucide="shield-check" style="width:14px;height:14px;"></i>
+                <span>Secured with end-to-end encryption</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container hidden" id="app-container">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
+                <i data-lucide="menu"></i>
+            </button>
+            <div class="mobile-logo">
+                <i data-lucide="cpu" class="logo-icon"></i>
+                <span>UniAlign AI</span>
+            </div>
+        </div>
+
+        <!-- Sidebar Overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-container">
+                <i data-lucide="cpu" class="logo-icon"></i>
+                <h1>UniAlign AI</h1>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-view="home" id="nav-home">
+                    <i data-lucide="home"></i> Home
+                </button>
+                <button class="nav-item" data-view="dashboard" id="nav-dashboard">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </button>
+                <button class="nav-item" data-view="allocation" id="nav-allocation">
+                    <i data-lucide="grid-3x3"></i> Room Allocation AI
+                </button>
+                <button class="nav-item" data-view="students" id="nav-students">
+                    <i data-lucide="users"></i> Student Directory
+                </button>
+                <button class="nav-item" data-view="data" id="nav-data">
+                    <i data-lucide="database"></i> System Data
+                </button>
+                <button class="nav-item" data-view="settings" id="nav-settings">
+                    <i data-lucide="settings"></i> Settings
+                </button>
+            </nav>
+
+            <div class="sidebar-action" style="margin-bottom: 1.5rem;">
+                <button id="ai-visualize-btn" class="btn btn-primary"
+                    style="width: 100%; justify-content: center; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3); background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);">
+                    <i data-lucide="eye"></i> AI Visualize
+                </button>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="sys-status">
+                    <span class="status-dot"></span> System Online
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="greeting">
+                    <h2>Welcome</h2>
+                    <p class="subtitle">AI-powered seating allocation tool.</p>
+                </div>
+                <div class="actions">
+                    <button id="run-ai-btn" class="btn btn-primary">
+                        <i data-lucide="zap"></i> Run AI Optimization
+                    </button>
+                </div>
+            </header>
+
+            <!-- ==================== -->
+            <!-- HOME / LANDING PAGE  -->
+            <!-- ==================== -->
+            <div id="view-home" class="view-section active">
+                <!-- Hero Section -->
+                <div class="home-hero">
+                    <div class="home-hero-glow"></div>
+                    <div class="home-hero-content">
+                        <div class="home-badge">
+                            <i data-lucide="sparkles"></i>
+                            <span>AI-Powered Allocation Engine</span>
+                        </div>
+                        <h1 class="home-title">
+                            Smart Seating.<br>
+                            <span class="home-title-gradient">Zero Conflicts.</span>
+                        </h1>
+                        <p class="home-description">
+                            UniAlign AI uses advanced artificial intelligence to generate optimal exam seating
+                            arrangements. Upload your student data, and let the AI ensure no two adjacent
+                            students share the same exam — with 100% accuracy.
+                        </p>
+                        <div class="home-cta-row">
+                            <button id="home-get-started" class="btn btn-primary btn-lg">
+                                <i data-lucide="rocket"></i> Get Started
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="home-stats">
+                    <div class="home-stat-card">
+                        <div class="home-stat-icon">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div class="home-stat-value" data-target="900">0</div>
+                        <div class="home-stat-label">Total Students</div>
+                    </div>
+                    <div class="home-stat-card">
+                        <div class="home-stat-icon accent-green">
+                            <i data-lucide="target"></i>
+                        </div>
+                        <div class="home-stat-value" data-target="100" data-suffix="%">0</div>
+                        <div class="home-stat-label">Seating Accuracy</div>
+                    </div>
+
+                    <div class="home-stat-card">
+                        <div class="home-stat-icon accent-amber">
+                            <i data-lucide="zap"></i>
+                        </div>
+                        <div class="home-stat-value" data-target="10" data-suffix="x">0</div>
+                        <div class="home-stat-label">Faster Than Manual</div>
+                    </div>
+                </div>
+
+                <!-- Drag & Drop Upload Section -->
+                <div class="home-upload-section">
+                    <h2 class="home-section-title">
+                        <i data-lucide="upload-cloud"></i>
+                        Upload Your Data
+                    </h2>
+                    <p class="home-section-desc">Drag & drop your student and room data files to get started. We accept
+                        CSV and JSON formats.</p>
+
+                    <div class="upload-zones-row">
+                        <!-- Student Data Upload -->
+                        <div class="upload-zone" id="student-upload-zone" data-type="students">
+                            <div class="upload-zone-inner">
+                                <div class="upload-icon-wrap">
+                                    <i data-lucide="file-spreadsheet" class="upload-icon"></i>
+                                </div>
+                                <h3>Student Data</h3>
+                                <p>Drag & drop your <strong>CSV</strong> or <strong>JSON</strong> file</p>
+                                <span class="upload-hint">or click to browse</span>
+                                <input type="file" id="student-file-input" accept=".csv,.json"
+                                    class="upload-file-input">
+                            </div>
+                            <div class="upload-status hidden" id="student-upload-status">
+                                <i data-lucide="check-circle" class="upload-status-icon success"></i>
+                                <span class="upload-status-text">File loaded successfully</span>
+                            </div>
+                        </div>
+
+                        <!-- Room Data Upload -->
+                        <div class="upload-zone" id="room-upload-zone" data-type="rooms">
+                            <div class="upload-zone-inner">
+                                <div class="upload-icon-wrap">
+                                    <i data-lucide="door-open" class="upload-icon"></i>
+                                </div>
+                                <h3>Room Data</h3>
+                                <p>Drag & drop your <strong>CSV</strong> or <strong>JSON</strong> file</p>
+                                <span class="upload-hint">or click to browse</span>
+                                <input type="file" id="room-file-input" accept=".csv,.json" class="upload-file-input">
+                            </div>
+                            <div class="upload-status hidden" id="room-upload-status">
+                                <i data-lucide="check-circle" class="upload-status-icon success"></i>
+                                <span class="upload-status-text">File loaded successfully</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Templates Row -->
+                    <div class="upload-templates">
+                        <button id="download-student-template" class="template-btn">
+                            <i data-lucide="download"></i> Download Student Template (CSV)
+                        </button>
+                        <button id="download-room-template" class="template-btn">
+                            <i data-lucide="download"></i> Download Room Template (CSV)
+                        </button>
+                    </div>
+
+                    <!-- Upload Summary -->
+                    <div class="upload-summary hidden" id="upload-summary">
+                        <div class="upload-summary-card">
+                            <i data-lucide="users"></i>
+                            <div>
+                                <strong id="uploaded-student-count">0</strong>
+                                <span>Students Loaded</span>
+                            </div>
+                        </div>
+                        <div class="upload-summary-card">
+                            <i data-lucide="door-open"></i>
+                            <div>
+                                <strong id="uploaded-room-count">0</strong>
+                                <span>Rooms Configured</span>
+                            </div>
+                        </div>
+                        <button id="proceed-to-dashboard" class="btn btn-primary">
+                            <i data-lucide="arrow-right"></i> Proceed to Dashboard
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Features Section -->
+                <div class="home-features">
+                    <div class="home-feature-card">
+                        <div class="feature-icon-wrap">
+                            <i data-lucide="brain"></i>
+                        </div>
+                        <h3>AI-Powered Engine</h3>
+                        <p>Uses Gemini AI to generate conflict-free seating arrangements with two 2D matrix arrays.</p>
+                    </div>
+                    <div class="home-feature-card">
+                        <div class="feature-icon-wrap accent-green">
+                            <i data-lucide="shield-check"></i>
+                        </div>
+                        <h3>Anti-Cheating Logic</h3>
+                        <p>Ensures no adjacent students take the same exam — orthogonal constraint satisfaction.</p>
+                    </div>
+                    <div class="home-feature-card">
+                        <div class="feature-icon-wrap accent-pink">
+                            <i data-lucide="file-text"></i>
+                        </div>
+                        <h3>PDF Export</h3>
+                        <p>Export room-wise seating charts with visual grids, QR verification, and student details.</p>
+                    </div>
+                    <div class="home-feature-card">
+                        <div class="feature-icon-wrap accent-amber">
+                            <i data-lucide="upload-cloud"></i>
+                        </div>
+                        <h3>Your Data, Your Rules</h3>
+                        <p>Import your own student and room data via drag-and-drop CSV upload.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="view-section hidden">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon"><i data-lucide="users"></i></div>
+                        <div class="metric-data">
+                            <h3>Total Students</h3>
+                            <p id="metric-students">0</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon"><i data-lucide="book-open"></i></div>
+                        <div class="metric-data">
+                            <h3>Active Exams</h3>
+                            <p id="metric-exams">0</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon"><i data-lucide="door-open"></i></div>
+                        <div class="metric-data">
+                            <h3>Available Rooms</h3>
+                            <p id="metric-rooms">0</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon"><i data-lucide="percent"></i></div>
+                        <div class="metric-data">
+                            <h3>Optimization Score</h3>
+                            <p id="metric-score">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-panels">
+                    <!-- Charts Row -->
+                    <div class="charts-row">
+                        <div class="panel chart-panel">
+                            <div class="panel-header">
+                                <h3>Room Utilization</h3>
+                            </div>
+                            <div class="panel-body chart-body">
+                                <canvas id="chart-room-util"></canvas>
+                                <div class="chart-empty" id="chart-room-empty">Run AI to see room utilization</div>
+                            </div>
+                        </div>
+                        <div class="panel chart-panel">
+                            <div class="panel-header">
+                                <h3>Course Distribution</h3>
+                            </div>
+                            <div class="panel-body chart-body">
+                                <canvas id="chart-course-dist"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Recent AI Allocations</h3>
+                        </div>
+                        <div class="panel-body">
+                            <ul class="recent-allocations" id="allocations-list">
+                                <li class="empty-state">No automatic allocations generated yet. Click 'Run AI
+                                    Optimization' to begin.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Room Allocation View -->
+            <div id="view-allocation" class="view-section hidden">
+                <div class="allocation-controls">
+                    <select id="room-selector" class="glass-select">
+                        <option value="">Select Room to Visualize</option>
+                    </select>
+                    <select id="sort-selector" class="glass-select">
+                        <option value="default">Sort: Default (Optimized)</option>
+                        <option value="alpha">Sort: Alphabetical (A → Z)</option>
+                        <option value="alpha-desc">Sort: Alphabetical (Z → A)</option>
+                        <option value="roll">Sort: Roll Number (Asc)</option>
+                        <option value="roll-desc">Sort: Roll Number (Desc)</option>
+                        <option value="erp">Sort: ERP ID (Asc)</option>
+                        <option value="erp-desc">Sort: ERP ID (Desc)</option>
+                        <option value="course">Sort: Group by Course</option>
+                    </select>
+                    <div class="search-box search-box-sm">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="room-search" class="glass-input" placeholder="Search student in room...">
+                    </div>
+                </div>
+                <div class="allocation-actions-row">
+                    <button id="export-room-pdf" class="btn btn-export" title="Export this room's allocation to PDF">
+                        <i data-lucide="file-down"></i> <span class="btn-label">Export Room PDF</span>
+                    </button>
+                    <button id="export-all-pdf" class="btn btn-export" title="Export all rooms allocation to PDF">
+                        <i data-lucide="download"></i> <span class="btn-label">Export All PDF</span>
+                    </button>
+                    <button id="export-room-excel" class="btn btn-export btn-excel"
+                        title="Export this room's allocation to Excel">
+                        <i data-lucide="sheet"></i> <span class="btn-label">Room Excel</span>
+                    </button>
+                    <button id="export-all-excel" class="btn btn-export btn-excel"
+                        title="Export all rooms allocation to Excel">
+                        <i data-lucide="file-spreadsheet"></i> <span class="btn-label">All Excel</span>
+                    </button>
+                    <button id="export-room-csv" class="btn btn-export btn-csv"
+                        title="Export this room's allocation to CSV">
+                        <i data-lucide="file-text"></i> <span class="btn-label">Room CSV</span>
+                    </button>
+                    <button id="export-all-csv" class="btn btn-export btn-csv"
+                        title="Export all rooms allocation to CSV">
+                        <i data-lucide="files"></i> <span class="btn-label">All CSV</span>
+                    </button>
+                    <button id="print-seating-chart" class="btn btn-print" title="Print-friendly seating chart">
+                        <i data-lucide="printer"></i> <span class="btn-label">Print Chart</span>
+                    </button>
+                    <div class="drag-toggle-wrap">
+                        <label class="toggle-label" for="drag-mode-toggle">
+                            <i data-lucide="move"></i> <span class="btn-label">Drag to Swap</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="drag-mode-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="room-visualization-container">
+                    <div id="room-grid" class="room-grid">
+                        <div class="empty-state center-all">Select a room or run AI first to see the map.</div>
+                    </div>
+                </div>
+                <div class="legend" id="room-legend">
+                    <div class="legend-item"><span class="legend-color empty"></span> Empty Seat</div>
+                    <div class="legend-item"><span class="legend-color course-a"></span> Math 101</div>
+                    <div class="legend-item"><span class="legend-color course-b"></span> Physics 201</div>
+                </div>
+            </div>
+
+            <!-- Student Directory View -->
+            <div id="view-students" class="view-section hidden">
+                <div class="student-directory-controls">
+                    <div class="search-box">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="student-search" class="glass-input"
+                            placeholder="Search by name, roll number, ERP ID...">
+                    </div>
+                    <select id="student-sort-selector" class="glass-select">
+                        <option value="alpha">Sort: Alphabetical (A → Z)</option>
+                        <option value="alpha-desc">Sort: Alphabetical (Z → A)</option>
+                        <option value="roll">Sort: Roll Number (Asc)</option>
+                        <option value="roll-desc">Sort: Roll Number (Desc)</option>
+                        <option value="erp">Sort: ERP ID (Asc)</option>
+                        <option value="erp-desc">Sort: ERP ID (Desc)</option>
+                        <option value="course">Sort: Group by Course</option>
+                    </select>
+                    <select id="student-filter-course" class="glass-select">
+                        <option value="">All Courses</option>
+                    </select>
+                    <button id="export-directory-pdf" class="btn btn-export" title="Export student directory to PDF">
+                        <i data-lucide="file-down"></i> <span class="btn-label">Export PDF</span>
+                    </button>
+                    <button id="export-directory-excel" class="btn btn-export btn-excel"
+                        title="Export student directory to Excel">
+                        <i data-lucide="sheet"></i> <span class="btn-label">Export Excel</span>
+                    </button>
+                    <button id="export-directory-csv" class="btn btn-export btn-csv"
+                        title="Export student directory to CSV">
+                        <i data-lucide="file-text"></i> <span class="btn-label">Export CSV</span>
+                    </button>
+                </div>
+                <div class="panel" style="margin-top: 1.5rem;">
+                    <div class="panel-header student-table-header">
+                        <h3>Student Directory</h3>
+                        <span class="student-count" id="student-count-label">0 students</span>
+                    </div>
+                    <div class="panel-body student-table-wrapper">
+                        <table class="student-table" id="student-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable-th" data-sort="name">Name <i data-lucide="arrow-up-down"
+                                            class="sort-icon"></i></th>
+                                    <th class="sortable-th" data-sort="roll">Roll No. <i data-lucide="arrow-up-down"
+                                            class="sort-icon"></i></th>
+                                    <th class="sortable-th" data-sort="erp">ERP ID <i data-lucide="arrow-up-down"
+                                            class="sort-icon"></i></th>
+                                    <th class="sortable-th" data-sort="course">Course <i data-lucide="arrow-up-down"
+                                            class="sort-icon"></i></th>
+                                    <th>Semester</th>
+                                    <th>Room</th>
+                                    <th>Seat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Data View -->
+            <div id="view-data" class="view-section hidden">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>System Data Summary</h3>
+                    </div>
+                    <div class="panel-body data-summary" id="data-summary">
+                        Loading...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="view-section hidden">
+                <div class="settings-container">
+
+
+
+                    <div class="panel settings-panel">
+                        <div class="panel-header">
+                            <h3><i data-lucide="info"
+                                    style="width:20px;height:20px;vertical-align:middle;margin-right:0.5rem;"></i>About
+                                UniAlign AI</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="about-info">
+                                <p><strong>Version:</strong> 2.0.0</p>
+                                <p><strong>Engine:</strong> AI-powered allocation with dual 2D array matrix</p>
+                                <p><strong>Data Sources:</strong> CSV / JSON file upload</p>
+                                <p><strong>PDF Export:</strong> Room charts, seating grids, QR verification</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- App Footer -->
+            <footer class="app-footer">
+                <div class="footer-divider"></div>
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <div class="footer-logo">
+                            <i data-lucide="cpu" style="width:18px;height:18px;color:var(--accent-primary);"></i>
+                            <span>UniAlign AI</span>
+                        </div>
+                        <p class="footer-desc">AI Driven University Seating & Room Allocation System with smart sorting,
+                            room visualization, and constraint-based optimization.</p>
+                    </div>
+                    <div class="footer-contributors">
+                        <h4 class="footer-section-title">
+                            <i data-lucide="code-2" style="width:16px;height:16px;"></i>
+                            Developers
+                        </h4>
+                        <div class="contributors-grid">
+                            <div class="contributor-card">
+                                <div class="contributor-avatar">Mk</div>
+                                <div class="contributor-info">
+                                    <span class="contributor-name">Mayank Kashyap</span>
+                                </div>
+                            </div>
+                            <div class="contributor-card">
+                                <div class="contributor-avatar">MK</div>
+                                <div class="contributor-info">
+                                    <span class="contributor-name">Mayank Kumar</span>
+                                </div>
+                            </div>
+                            <div class="contributor-card">
+                                <div class="contributor-avatar">KT</div>
+                                <div class="contributor-info">
+                                    <span class="contributor-name">Kunal Tackwal</span>
+                                </div>
+                            </div>
+                            <div class="contributor-card">
+                                <div class="contributor-avatar">GK</div>
+                                <div class="contributor-info">
+                                    <span class="contributor-name">Gautam Kumar</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2026 UniAlign AI. All rights reserved.</p>
+                    <p class="footer-version">Built with <span style="color:#ef4444;"> by the UniAlign Team</span>
+                    </p>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Hover Tooltip -->
+    <div id="student-tooltip" class="student-tooltip hidden">
+        <div class="tooltip-header">
+            <div class="tooltip-avatar" id="tooltip-avatar">A</div>
+            <div class="tooltip-name-wrap">
+                <span class="tooltip-name" id="tooltip-name">--</span>
+                <span class="tooltip-id" id="tooltip-id">--</span>
+            </div>
+        </div>
+        <div class="tooltip-divider"></div>
+        <div class="tooltip-row">
+            <span class="tooltip-label">Roll No.</span>
+            <span class="tooltip-value" id="tooltip-roll">--</span>
+        </div>
+        <div class="tooltip-row">
+            <span class="tooltip-label">ERP ID</span>
+            <span class="tooltip-value" id="tooltip-erp">--</span>
+        </div>
+        <div class="tooltip-row">
+            <span class="tooltip-label">Course</span>
+            <span class="tooltip-value" id="tooltip-course">--</span>
+        </div>
+        <div class="tooltip-row">
+            <span class="tooltip-label">Semester</span>
+            <span class="tooltip-value" id="tooltip-semester">--</span>
+        </div>
+        <div class="tooltip-row">
+            <span class="tooltip-label">Department</span>
+            <span class="tooltip-value" id="tooltip-department">--</span>
+        </div>
+    </div>
+
+    <!-- Student Detail Modal -->
+    <div id="student-modal" class="modal hidden">
+        <div class="modal-content glass-panel">
+            <button class="close-modal" id="close-modal"><i data-lucide="x"></i></button>
+            <div class="modal-header">
+                <div class="modal-avatar" id="modal-avatar">A</div>
+                <div>
+                    <h3 id="modal-student-name">Student Details</h3>
+                    <p class="modal-subtitle" id="modal-student-email">--</p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row">
+                    <span class="detail-label">Student ID</span>
+                    <span class="detail-value" id="modal-student-id">--</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Roll Number</span>
+                    <span class="detail-value" id="modal-student-roll">--</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">ERP ID</span>
+                    <span class="detail-value" id="modal-student-erp">--</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Exam Course</span>
+                    <span class="detail-value" id="modal-student-exam">--</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Department</span>
+                    <span class="detail-value" id="modal-student-dept">--</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Semester</span>
+                    <span class="detail-value" id="modal-student-sem">--</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email</span>
+                    <span class="detail-value" id="modal-student-email-detail">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print-Friendly Seating Chart (hidden, shown on print) -->
+    <div id="print-container" class="print-container"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/allocator.js"></script>
+    <script type="module" src="js/fileParser.js"></script>
+    <script type="module" src="js/aiAllocator.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
