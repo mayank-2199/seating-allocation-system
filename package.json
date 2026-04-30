@@ -1,0 +1,11 @@
+{
+  "name": "unialign-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server/app.js",
+    "dev": "node server/app.js",
+    "install:server": "cd server && npm install",
+    "postinstall": "cd server && npm install"
+  }
+}

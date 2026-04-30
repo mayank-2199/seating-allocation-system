@@ -17,7 +17,6 @@ const {
 } = require('./database');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
@@ -212,39 +211,49 @@ app.post('/api/courses/bulk', (req, res) => {
 });
 
 // ========================
-// Catch-all: serve index.html for any non-API route
+// Catch-all: serve index.html for any non-API route (local dev only)
 // ========================
-app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
-        res.sendFile(path.join(__dirname, '..', 'index.html'));
-    }
-});
+if (!process.env.VERCEL) {
+    app.get('*', (req, res) => {
+        if (!req.path.startsWith('/api')) {
+            res.sendFile(path.join(__dirname, '..', 'index.html'));
+        }
+    });
+}
 
 // ========================
-// Start Server
+// Initialize Database & Start Server
 // ========================
 initDB();
 
-app.listen(PORT, () => {
-    console.log('');
-    console.log('╔══════════════════════════════════════════════╗');
-    console.log('║     🎓 UniAlign AI — Backend Server         ║');
-    console.log('╠══════════════════════════════════════════════╣');
-    console.log(`║  🌐 Frontend:  http://localhost:${PORT}          ║`);
-    console.log(`║  🔌 API:       http://localhost:${PORT}/api      ║`);
-    console.log('║  💾 Database:  SQLite (server/unialign.db)   ║');
-    console.log('╚══════════════════════════════════════════════╝');
-    console.log('');
-});
+// On Vercel: export the app as a module (serverless function)
+// Locally: start listening on a port
+if (process.env.VERCEL) {
+    module.exports = app;
+} else {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log('');
+        console.log('╔══════════════════════════════════════════════╗');
+        console.log('║     🎓 UniAlign AI — Backend Server         ║');
+        console.log('╠══════════════════════════════════════════════╣');
+        console.log(`║  🌐 Frontend:  http://localhost:${PORT}          ║`);
+        console.log(`║  🔌 API:       http://localhost:${PORT}/api      ║`);
+        console.log('║  💾 Database:  SQLite (server/unialign.db)   ║');
+        console.log('╚══════════════════════════════════════════════╝');
+        console.log('');
+    });
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-    console.log('\n🛑 Shutting down...');
-    closeDB();
-    process.exit(0);
-});
+    process.on('SIGINT', () => {
+        console.log('\n🛑 Shutting down...');
+        closeDB();
+        process.exit(0);
+    });
 
-process.on('SIGTERM', () => {
-    closeDB();
-    process.exit(0);
-});
+    process.on('SIGTERM', () => {
+        closeDB();
+        process.exit(0);
+    });
+
+    module.exports = app;
+}

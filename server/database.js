@@ -1,13 +1,15 @@
 /**
  * database.js — SQLite Database Module for UniAlign AI
  * Uses sql.js (pure JavaScript SQLite, no native dependencies).
- * Persists to disk at server/unialign.db
+ * Local: persists to disk at server/unialign.db
+ * Vercel: runs in-memory (seeds fresh on each cold start)
  */
 
 const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
 
+const IS_VERCEL = !!process.env.VERCEL;
 const DB_PATH = path.join(__dirname, 'unialign.db');
 let db = null;
 
@@ -15,16 +17,23 @@ let db = null;
 // Initialize Database
 // ========================
 async function initDB() {
+    if (db) return db; // Already initialized (Vercel may call multiple times)
+
     const SQL = await initSqlJs();
 
-    // Load existing database file if it exists
-    if (fs.existsSync(DB_PATH)) {
+    if (IS_VERCEL) {
+        // Vercel: always use in-memory database (no filesystem persistence)
+        db = new SQL.Database();
+        console.log('☁️ Vercel detected — using in-memory SQLite');
+    } else if (fs.existsSync(DB_PATH)) {
+        // Local: load existing database from disk
         const fileBuffer = fs.readFileSync(DB_PATH);
         db = new SQL.Database(fileBuffer);
         console.log(`📂 Loaded existing database from ${DB_PATH}`);
     } else {
+        // Local: create new database
         db = new SQL.Database();
-        console.log(`🆕 Created new database`);
+        console.log('🆕 Created new database');
     }
 
     // Create tables
@@ -83,7 +92,7 @@ async function initDB() {
         )
     `);
 
-    // Seed if empty
+    // Seed if empty (always seeds on Vercel since it's in-memory)
     const result = db.exec('SELECT COUNT(*) as count FROM courses');
     const courseCount = result.length > 0 ? result[0].values[0][0] : 0;
     if (courseCount === 0) {
@@ -91,18 +100,22 @@ async function initDB() {
     }
 
     saveToDisk();
-    console.log(`✅ Database ready (${DB_PATH})`);
+    console.log(`✅ Database ready${IS_VERCEL ? ' (in-memory)' : ` (${DB_PATH})`}`);
     return db;
 }
 
 // ========================
-// Persist to disk
+// Persist to disk (skipped on Vercel — read-only filesystem)
 // ========================
 function saveToDisk() {
-    if (!db) return;
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    fs.writeFileSync(DB_PATH, buffer);
+    if (!db || IS_VERCEL) return;
+    try {
+        const data = db.export();
+        const buffer = Buffer.from(data);
+        fs.writeFileSync(DB_PATH, buffer);
+    } catch (err) {
+        console.warn('⚠️ Could not save to disk:', err.message);
+    }
 }
 
 // ========================
