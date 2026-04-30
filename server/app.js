@@ -1,5 +1,5 @@
 /**
- * app.js — Express REST API Server for UniAlign AI
+ * app.js — Express REST API Server for UniAlign
  * Serves the frontend as static files and exposes REST API endpoints.
  */
 
@@ -43,7 +43,7 @@ app.use(express.static(path.join(__dirname, '..')));
 
 // --- Health ---
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'UniAlign AI Backend is running', timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', message: 'UniAlign Backend is running', timestamp: new Date().toISOString() });
 });
 
 // --- Stats ---
@@ -245,7 +245,7 @@ if (process.env.VERCEL) {
     dbReady.then(() => app.listen(PORT, () => {
         console.log('');
         console.log('╔══════════════════════════════════════════════╗');
-        console.log('║     🎓 UniAlign AI — Backend Server         ║');
+        console.log('║     🎓 UniAlign — Backend Server            ║');
         console.log('╠══════════════════════════════════════════════╣');
         console.log(`║  🌐 Frontend:  http://localhost:${PORT}          ║`);
         console.log(`║  🔌 API:       http://localhost:${PORT}/api      ║`);

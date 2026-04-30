@@ -1,7 +1,7 @@
 {
   "name": "unialign-backend",
   "version": "1.0.0",
-  "description": "UniAlign AI Backend — Express + SQLite",
+  "description": "UniAlign Backend — Express + SQLite",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",

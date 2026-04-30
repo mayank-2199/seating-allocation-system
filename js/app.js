@@ -1,9 +1,12 @@
 import { runAllocationOptimization } from './allocator.js';
-import { runAIAllocation } from './aiAllocator.js';
 import { parseFile, generateCourseMetadata, getStudentTemplateCSV, getRoomTemplateCSV } from './fileParser.js';
 
 // Backend API base URL
-const API_BASE = '/api';
+// Use absolute URL for local development (e.g. Live Server or file://), otherwise relative for production (Vercel)
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+const API_BASE = isLocal && window.location.port !== '5000'
+    ? 'http://localhost:5000/api'
+    : '/api';
 
 let courses = [];
 let systemStudents = [];
@@ -17,9 +20,6 @@ let chartRoomUtil = null;
 let chartCourseDist = null;
 let userUploadedStudents = false;
 let userUploadedRooms = false;
-
-// Default Gemini API key
-const DEFAULT_API_KEY = 'AIzaSyCCJ4RBP3Su5kxl95182j2FjGm-lHMgupQ';
 
 // ========================
 // Load Data from Backend DB
@@ -112,12 +112,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const headings = {
-                home: ['Welcome', 'AI-powered seating allocation tool.'],
-                dashboard: ['Overview', 'AI-driven seating and logic matrix.'],
-                allocation: ['Room Allocation', 'Visualize AI-optimized seating arrangements.'],
+                home: ['Welcome', 'Algorithmic seating allocation tool.'],
+                dashboard: ['Overview', 'Algorithmic seating and logic matrix.'],
+                allocation: ['Room Allocation', 'Visualize optimized seating arrangements.'],
                 students: ['Student Directory', 'Browse, search, and sort all enrolled students.'],
                 data: ['System Data', 'Raw system configuration data.'],
-                settings: ['Settings', 'Configure AI API and system parameters.']
+                settings: ['Settings', 'Configure system parameters.']
             };
             const [title, sub] = headings[viewName] || ['Overview', ''];
             document.querySelector('.topbar .greeting h2').textContent = title;
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('sidebar-overlay')?.addEventListener('click', closeMobileSidebar);
 
-    // AI Visualize Sidebar Button
+    // Visualize Sidebar Button
     document.getElementById('ai-visualize-btn')?.addEventListener('click', () => {
         const allocNavBtn = document.querySelector('.nav-item[data-view="allocation"]');
         if (allocNavBtn) allocNavBtn.click();
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initHomePage();
 
     // ========================
-    // AI Optimization Button
+    // Local Optimization Button
     // ========================
     document.getElementById('run-ai-btn').addEventListener('click', handleRunAI);
     
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('export-all-pdf').addEventListener('click', () => {
-        if (!latestAllocationResult) { alert('Please run AI Optimization first.'); return; }
+        if (!latestAllocationResult) { alert('Please run Local Optimization first.'); return; }
         exportAllRoomsPDF();
     });
 
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('export-all-excel').addEventListener('click', () => {
-        if (!latestAllocationResult) { alert('Please run AI Optimization first.'); return; }
+        if (!latestAllocationResult) { alert('Please run Local Optimization first.'); return; }
         exportAllRoomsExcel();
     });
 
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('export-all-csv').addEventListener('click', () => {
-        if (!latestAllocationResult) { alert('Please run AI Optimization first.'); return; }
+        if (!latestAllocationResult) { alert('Please run Local Optimization first.'); return; }
         exportAllRoomsCSV();
     });
 
@@ -560,7 +560,7 @@ function refreshDashboardMetrics() {
 }
 
 // ========================
-// AI Optimization Handler
+// Local Optimization Handler
 // ========================
 async function handleRunAI() {
     const btn = document.getElementById('run-ai-btn');
@@ -568,10 +568,9 @@ async function handleRunAI() {
     lucide.createIcons();
 
     try {
-        // Use local algorithm
         await new Promise(resolve => setTimeout(resolve, 600));
         const result = runAllocationOptimization(systemStudents, systemRooms);
-        showToast('✅ Allocation complete!', 'success');
+        showToast('Allocation complete!', 'success');
 
         latestAllocationResult = result;
 
@@ -617,14 +616,14 @@ async function handleRunAI() {
         
         btn.innerHTML = '<i data-lucide="zap"></i> Optimization Complete';
         setTimeout(() => {
-            btn.innerHTML = '<i data-lucide="zap"></i> Run AI Optimization';
+            btn.innerHTML = '<i data-lucide="zap"></i> Run Local Optimization';
             lucide.createIcons();
         }, 3000);
 
     } catch (err) {
         console.error('Optimization failed:', err);
         showToast(`Optimization failed: ${err.message}`, 'error');
-        btn.innerHTML = '<i data-lucide="zap"></i> Run AI Optimization';
+        btn.innerHTML = '<i data-lucide="zap"></i> Run Local Optimization';
         lucide.createIcons();
     }
 }

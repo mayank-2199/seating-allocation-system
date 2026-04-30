@@ -1,6 +1,6 @@
-# 🎓 UniAlign AI — AI-Driven University Seating & Room Allocation System
+# 🎓 UniAlign — Algorithmic University Seating & Room Allocation System
 
-> An intelligent university exam seating arrangement system powered by **Google Gemini AI** and a **Node.js + SQLite** backend. It uses constraint-satisfaction algorithms and AI to optimally place 900+ students across 36 exam rooms while preventing academic malpractice.
+> An intelligent university exam seating arrangement system powered by a local constraint-satisfaction engine and a **Node.js + SQLite** backend. It places 900+ students across 36 exam rooms while preventing academic malpractice.
 
 ---
 
@@ -16,8 +16,7 @@
 - [Database Schema](#database-schema)
 - [Detailed Module Breakdown](#detailed-module-breakdown)
   - [Backend — Server Layer](#1-backend--server-layer)
-  - [AI Allocator Engine — `allocator.js`](#2-ai-allocator-engine--allocatorjs)
-  - [AI API Integration — `aiAllocator.js`](#3-ai-api-integration--aiallocatorjs)
+  - [Local Allocator Engine — `allocator.js`](#2-local-allocator-engine--allocatorjs)
   - [File Parser — `fileParser.js`](#4-file-parser--fileparserjs)
   - [Application Controller — `app.js`](#5-application-controller--appjs)
   - [User Interface — `index.html`](#6-user-interface--indexhtml)
@@ -34,7 +33,7 @@
 
 ## Overview
 
-**UniAlign AI** is a full-stack web application designed for universities and educational institutions to automate the exam seating arrangement process. The system stores 900 students, 4 courses, and 36 rooms in a persistent **SQLite database**, allocates students using both a local constraint-satisfaction greedy algorithm and the **Google Gemini AI API**, and provides rich visualization, drag-and-drop seat swapping, multi-format export (PDF, Excel, CSV), and a premium dark glassmorphism UI.
+**UniAlign** is a full-stack web application designed for universities and educational institutions to automate the exam seating arrangement process. The system stores 900 students, 4 courses, and 36 rooms in a persistent **SQLite database**, allocates students using a local constraint-satisfaction greedy algorithm, and provides rich visualization, drag-and-drop seat swapping, multi-format export (PDF, Excel, CSV), and a premium dark glassmorphism UI.
 
 ### The Problem It Solves
 
@@ -44,7 +43,7 @@ Manual exam seating arrangement is:
 - **Hard to document** — Paper-based records are difficult to share and archive
 - **Non-persistent** — Arrangements are lost and must be redone every exam cycle
 
-UniAlign AI automates all of this with a persistent backend and AI-powered optimization.
+UniAlign automates all of this with a persistent backend and deterministic optimization.
 
 ---
 
@@ -52,7 +51,7 @@ UniAlign AI automates all of this with a persistent backend and AI-powered optim
 
 | Feature | Description |
 |---------|-------------|
-| 🤖 **Dual AI Engines** | Local constraint-satisfaction algorithm + Google Gemini AI API for intelligent seating |
+| Allocation Engine | Local constraint-satisfaction algorithm for intelligent seating |
 | 💾 **SQLite Database** | Persistent backend — students, rooms, courses, and allocations survive server restarts |
 | 🔌 **REST API** | Full CRUD API for students, courses, rooms, and allocations |
 | 📊 **Dashboard** | Real-time metrics showing total students, active exams, available rooms, and optimization score |
@@ -96,8 +95,6 @@ UniAlign AI automates all of this with a persistent backend and AI-powered optim
 ├─────────────────────────────────────────────────────────────────┤
 │                     BUSINESS LOGIC LAYER                         │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐       │
-│  │ allocator.js  │  │aiAllocator.js│  │  fileParser.js   │       │
-│  │ Local greedy  │  │ Gemini AI    │  │  CSV/JSON parser │       │
 │  │ algorithm     │  │ API client   │  │  with validation │       │
 │  └──────────────┘  └──────────────┘  └──────────────────┘       │
 ├─────────────────────────────────────────────────────────────────┤
@@ -134,7 +131,6 @@ seating-allocation-system/
 ├── js/
 │   ├── app.js                  # Application controller — all UI logic & exports
 │   ├── allocator.js            # Local AI allocation algorithm (constraint-satisfaction)
-│   ├── aiAllocator.js          # Google Gemini AI API integration
 │   └── fileParser.js           # CSV/JSON file parser with validation
 │
 └── server/
@@ -152,7 +148,6 @@ seating-allocation-system/
 | `style.css` | Full design system — dark glassmorphism theme, animations, responsive |
 | `js/app.js` | Frontend logic — data fetching from API, rendering, events, exports |
 | `js/allocator.js` | Local constraint-satisfaction greedy allocation algorithm |
-| `js/aiAllocator.js` | Gemini AI API client — sends data to AI for smart allocation |
 | `js/fileParser.js` | CSV/JSON file parser with field normalization and validation |
 | `server/app.js` | Express server — 15+ REST API endpoints + static file hosting |
 | `server/database.js` | SQLite module — schema, seed data (900 students, 36 rooms), queries |
@@ -168,13 +163,36 @@ seating-allocation-system/
 | **Database** | SQLite (via sql.js) | Persistent data storage |
 | **Frontend** | HTML5 + Vanilla JavaScript (ES6+) | UI structure & logic |
 | **Styling** | Vanilla CSS3 | Custom properties, glassmorphism, animations |
-| **AI Engine** | Google Gemini 2.5 Flash API | AI-powered seating optimization |
 | **Typography** | Google Fonts (Outfit) | Modern, clean typeface |
 | **Icons** | Lucide Icons | Lightweight SVG icon library |
 | **Charts** | Chart.js | Dashboard visualizations |
 | **PDF** | jsPDF + AutoTable | Client-side PDF generation |
 | **Excel** | SheetJS (xlsx) | Client-side Excel file generation |
 | **CORS** | cors (npm) | Cross-origin API access |
+
+---
+
+## 🚀 Quick Start Guide
+
+When demonstrating or running this project for the first time, follow these exact steps to start the application:
+
+1. **Install Dependencies** (Only needed once)
+   ```bash
+   npm run install:server
+   ```
+
+2. **Start the Backend Server** (Required every time)
+   ```bash
+   npm start
+   ```
+   *This will start the Node.js API and the SQLite database.*
+
+3. **Open the Application**
+   - Once the server is running, open your web browser and go to:
+   - 👉 **[http://localhost:5000](http://localhost:5000)**
+
+> [!IMPORTANT]  
+> **Do not open `index.html` directly from your file explorer.** The application requires the backend server to be running in order to fetch the student and room data from the database.
 
 ---
 
@@ -185,33 +203,14 @@ seating-allocation-system/
 - **Node.js** v18+ (check: `node --version`)
 - **npm** v8+ (bundled with Node.js)
 - A modern web browser (Chrome 90+, Firefox 88+, Edge 90+)
-- Internet connection (for CDN resources and Gemini AI API)
-
-### Installation
-
-```bash
-# 1. Clone the project
-git clone <repository-url>
-cd seating-allocation-system
-
-# 2. Install backend dependencies
-cd server
-npm install
-
-# 3. Start the server
-node app.js
-```
-
-> **Note:** If Node.js is not in your PATH on Windows, use the full path:
-> ```powershell
-> & "C:\Program Files\nodejs\node.exe" app.js
-> ```
 
 ### Server Startup Output
 
+When you run `npm start`, you should see the following in your terminal:
+
 ```
 ╔══════════════════════════════════════════════╗
-║     🎓 UniAlign AI — Backend Server         ║
+║     🎓 UniAlign — Backend Server            ║
 ╠══════════════════════════════════════════════╣
 ║  🌐 Frontend:  http://localhost:5000          ║
 ║  🔌 API:       http://localhost:5000/api      ║
@@ -221,14 +220,14 @@ node app.js
 
 ### Usage Workflow
 
-1. **Start the server** → `node server/app.js`
-2. **Open** → `http://localhost:5000` in your browser
+1. **Start the server** → run `npm start` in your terminal
+2. **Open the app** → Navigate to `http://localhost:5000` in your browser
 3. **Login** → Enter credentials on the login page
 4. **Home Page** → View animated stats (900 students, 100% accuracy, etc.)
 5. **Upload Data** (optional) → Drag & drop CSV/JSON files for custom students/rooms
 6. **Dashboard** → View metrics (Total Students, Active Exams, Available Rooms)
-7. **Run AI Optimization** → Click the button to allocate all students to rooms
-8. **Room Allocation AI** → Select a room, visualize the 5×5 seating matrix
+7. **Run Local Optimization** → Click the button to allocate all students to rooms
+8. **Room Allocation** → Select a room, visualize the 5×5 seating matrix
 9. **Hover/Click seats** → View student profiles in tooltip/modal
 10. **Sort** → Change sorting mode (alphabetical, roll number, course, etc.)
 11. **Drag to Swap** → Toggle drag mode to rearrange students between seats
@@ -330,7 +329,7 @@ allocation_assignments (id, allocation_id, student_id, room_id, seat_row, seat_c
 
 ---
 
-### 2. AI Allocator Engine — `allocator.js`
+### 2. Local Allocator Engine — `allocator.js`
 
 **Purpose:** Local constraint-satisfaction greedy algorithm for exam seating.
 
@@ -365,18 +364,6 @@ Output: Grid assignments per room, unallocated student list, placement score
 
 ---
 
-### 3. AI API Integration — `aiAllocator.js`
-
-**Purpose:** Sends student and room data to **Google Gemini AI** for intelligent allocation.
-
-- Builds a structured prompt with all student IDs, exam IDs, and room dimensions
-- Calls the Gemini API (`gemini-2.5-flash-preview`) with `responseMimeType: "application/json"`
-- Parses the AI response (student grids + exam grids per room)
-- Validates placement count — falls back to local algorithm if AI places < 30% of students
-- Automatic fallback to local algorithm on API errors or missing API key
-
----
-
 ### 4. File Parser — `fileParser.js`
 
 **Purpose:** Parses uploaded CSV and JSON files with flexible field normalization.
@@ -397,7 +384,6 @@ Output: Grid assignments per room, unallocated student list, placement score
 |-----------|-------------|
 | **API Data Loading** | `loadInitialData()` fetches courses, students, rooms from backend on startup |
 | **View Router** | CSS class toggling for Dashboard, Room Allocation, Student Directory, etc. |
-| **AI Optimization** | Triggers allocation via Gemini AI with local fallback |
 | **Room Grid Renderer** | Builds interactive desk HTML with color-coded badges |
 | **Drag-to-Swap** | Drag students between seats with visual feedback |
 | **Sorting System** | 8 sort modes for both grid and directory views |
@@ -421,10 +407,10 @@ Output: Grid assignments per room, unallocated student list, placement score
 | **Login Overlay** | Animated login with particle effects and glassmorphism card |
 | **Home** | Landing page with animated stats, feature cards, data upload zones |
 | **Dashboard** | Metric cards + recent allocation panel + charts |
-| **Room Allocation AI** | Room selector, sort/search, desk grid, export buttons |
+| **Room Allocation** | Room selector, sort/search, desk grid, export buttons |
 | **Student Directory** | Searchable/filterable table with inline course pills |
 | **System Data** | Data summary with upload zones |
-| **Settings** | API key management, model selection |
+| **Settings** | System settings |
 
 #### External Dependencies (CDN)
 
@@ -475,9 +461,6 @@ Output: Grid assignments per room, unallocated student list, placement score
 | Approach | Engine | Pros | Cons |
 |----------|--------|------|------|
 | **Local Greedy** | `allocator.js` | Instant (<1ms), offline, deterministic | May leave empty seats |
-| **Gemini AI** | `aiAllocator.js` | Smarter distribution, handles complex scenarios | Requires API key, network latency |
-
-The system tries AI first and falls back to local if the API fails or returns poor results.
 
 ### Edge Cases Handled
 
@@ -485,8 +468,6 @@ The system tries AI first and falls back to local if the API fails or returns po
 |------|----------|
 | More students than seats | Excess reported as "unallocated" |
 | All students same exam | Alternating seats, empties between |
-| No API key | Automatic fallback to local algorithm |
-| AI returns invalid data | Fallback with error logging |
 | File upload errors | Row-level validation with user feedback |
 
 ---
@@ -534,7 +515,7 @@ Clean 2D matrix display showing `Rows×Cols` dimensions (e.g., `5×5`) without r
 | `erp` | ERP ID | Ascending |
 | `erp-desc` | ERP ID | Descending |
 | `course` | Course → Name | Grouped ascending |
-| `default` | — | AI-optimized order |
+| `default` | — | Algorithmic-optimized order |
 
 ---
 
@@ -559,18 +540,13 @@ Clean 2D matrix display showing `Rows×Cols` dimensions (e.g., `5×5`) without r
 | **Login** | Animated glassmorphism login with floating particles |
 | **Home** | Landing page with animated stat counters and feature cards |
 | **Dashboard** | 4 metric cards + recent allocations + course distribution chart |
-| **Room Allocation AI** | Room selector, 5×5 desk grid, PDF/Excel/CSV export buttons |
+| **Room Allocation** | Room selector, 5×5 desk grid, PDF/Excel/CSV export buttons |
 | **Student Directory** | Searchable table with course pills and export options |
 | **System Data** | Upload zones for custom CSV/JSON data |
-| **Settings** | Gemini API key configuration and model selection |
+| **Settings** | System settings |
 
 ---
 
-## Contributors
-
-See the application footer for the full list of contributors.
-
----
 
 ## License
 
@@ -580,5 +556,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 <p align="center">
   Built with ❤️ for smarter exam management<br>
-  <strong>UniAlign AI</strong> — AI-Driven University Seating & Room Allocation System
+  <strong>UniAlign</strong> — Algorithmic University Seating & Room Allocation System
 </p>
+
+
