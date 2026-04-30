@@ -22,6 +22,18 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+const dbReady = initDB();
+
+app.use('/api', async (req, res, next) => {
+    try {
+        await dbReady;
+        next();
+    } catch (err) {
+        console.error('Database initialization failed:', err);
+        res.status(500).json({ error: 'Database initialization failed' });
+    }
+});
+
 // Serve frontend static files from parent directory
 app.use(express.static(path.join(__dirname, '..')));
 
@@ -224,15 +236,13 @@ if (!process.env.VERCEL) {
 // ========================
 // Initialize Database & Start Server
 // ========================
-initDB();
-
 // On Vercel: export the app as a module (serverless function)
 // Locally: start listening on a port
 if (process.env.VERCEL) {
     module.exports = app;
 } else {
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
+    dbReady.then(() => app.listen(PORT, () => {
         console.log('');
         console.log('╔══════════════════════════════════════════════╗');
         console.log('║     🎓 UniAlign AI — Backend Server         ║');
@@ -242,6 +252,9 @@ if (process.env.VERCEL) {
         console.log('║  💾 Database:  SQLite (server/unialign.db)   ║');
         console.log('╚══════════════════════════════════════════════╝');
         console.log('');
+    })).catch((err) => {
+        console.error('Failed to start server:', err);
+        process.exit(1);
     });
 
     process.on('SIGINT', () => {
