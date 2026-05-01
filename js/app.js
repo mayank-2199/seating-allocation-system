@@ -590,7 +590,7 @@ async function handleRunAI() {
                         <div style="font-size: 0.85rem; color: var(--text-secondary)">Placed: ${alloc.assignments.length}/${alloc.capacity}</div>
                     </div>
                 </div>
-                <div style="font-size: 0.85rem; background: rgba(255,255,255,0.05); padding: 0.25rem 0.5rem; border-radius: 4px; display:flex; align-items:center;">
+                <div style="font-size: 0.85rem; background: rgba(0,0,0,0.05); padding: 0.25rem 0.5rem; border-radius: 4px; display:flex; align-items:center;">
                     ⚡ Optimized | Occupancy: ${alloc.occupancy}%
                 </div>
             `;
@@ -1023,7 +1023,7 @@ function initCourseDistChart() {
             datasets: [{
                 data: courseCounts,
                 backgroundColor: colors.slice(0, courses.length),
-                borderColor: 'rgba(10, 10, 15, 0.8)',
+                borderColor: 'rgba(255, 255, 255, 0.9)',
                 borderWidth: 3,
                 hoverOffset: 8
             }]
@@ -1035,7 +1035,7 @@ function initCourseDistChart() {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        color: '#94a3b8',
+                        color: '#64748b',
                         font: { family: 'Outfit', size: 11 },
                         padding: 12,
                         usePointStyle: true,
@@ -1073,7 +1073,7 @@ function updateRoomUtilChart() {
                 {
                     label: 'Empty',
                     data: empty,
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.08)',
                     borderRadius: 6,
                     barPercentage: 0.6
                 }
@@ -1086,7 +1086,7 @@ function updateRoomUtilChart() {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        color: '#94a3b8',
+                        color: '#64748b',
                         font: { family: 'Outfit', size: 11 },
                         padding: 12,
                         usePointStyle: true,
@@ -1103,7 +1103,7 @@ function updateRoomUtilChart() {
                 y: {
                     stacked: true,
                     ticks: { color: '#64748b', font: { family: 'Outfit', size: 11 } },
-                    grid: { color: 'rgba(255,255,255,0.05)' }
+                    grid: { color: 'rgba(0,0,0,0.05)' }
                 }
             }
         }
